@@ -1,4 +1,4 @@
-"""llmmeta command-line interface (spec §27). Every command is deterministic
+"""llm-pareto command-line interface (spec §27). Every command is deterministic
 and prints machine-readable JSON to stdout."""
 from __future__ import annotations
 
@@ -99,7 +99,7 @@ def cmd_dashboard(args):
     import subprocess, sys, os
     from pathlib import Path
     app = Path(__file__).resolve().parent / "dashboard.py"
-    env = dict(os.environ, LLMMETA_DB=args.db)
+    env = dict(os.environ, LLM_PARETO_DB=args.db)
     subprocess.run([sys.executable, "-m", "streamlit", "run", str(app)], env=env)
 
 
@@ -131,7 +131,7 @@ def cmd_analytics(args):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="llmmeta")
+    p = argparse.ArgumentParser(prog="llm-pareto")
     # parent carries --db so it can appear before OR after the subcommand
     parent = argparse.ArgumentParser(add_help=False)
     parent.add_argument("--db", default="outputs/leaderboard.db")

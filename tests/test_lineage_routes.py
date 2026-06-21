@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from llmmeta.adapters import openevals, vendor_claims
-from llmmeta.fetch import Snapshot, load_fixture
-from llmmeta.pipeline import recompute_normalized
-from llmmeta.store import Store
-from llmmeta.analysis import lineage_for, list_join_keys
-from llmmeta.routes import parse_routes
+from llm_pareto.adapters import openevals, vendor_claims
+from llm_pareto.fetch import Snapshot, load_fixture
+from llm_pareto.pipeline import recompute_normalized
+from llm_pareto.store import Store
+from llm_pareto.analysis import lineage_for, list_join_keys
+from llm_pareto.routes import parse_routes
 
 FIX = Path("tests/fixtures")
 AS_OF = "2026-06-18"
@@ -64,7 +64,7 @@ def test_parse_routes_fixture():
 
 def test_routes_figure_builds():
     pytest.importorskip("plotly")
-    from llmmeta.viz import routes_figure
+    from llm_pareto.viz import routes_figure
     routes = parse_routes(json.load(open(FIX / "openrouter_endpoints" / "sample.json")))
     fig = routes_figure(routes)
     assert fig.data and fig.data[0].type == "bar"

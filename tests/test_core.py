@@ -1,9 +1,9 @@
 """Core engine unit tests — baseline asserts from spec §20.1."""
-from llmmeta.normalization import tie_aware_ecdf
-from llmmeta.scoring import weighted_quality
-from llmmeta.cost import Workload, estimate_cost
-from llmmeta.pareto import Candidate, pareto_frontier, dominates
-from llmmeta.identity import shrink_to_prior
+from llm_pareto.normalization import tie_aware_ecdf
+from llm_pareto.scoring import weighted_quality
+from llm_pareto.cost import Workload, estimate_cost
+from llm_pareto.pareto import Candidate, pareto_frontier, dominates
+from llm_pareto.identity import shrink_to_prior
 
 
 def _score(rows, key):

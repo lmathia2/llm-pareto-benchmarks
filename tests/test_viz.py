@@ -2,7 +2,7 @@
 import pytest
 
 pytest.importorskip("plotly")
-from llmmeta.viz import pareto_figure
+from llm_pareto.viz import pareto_figure
 
 
 def test_pareto_figure_builds_traces():

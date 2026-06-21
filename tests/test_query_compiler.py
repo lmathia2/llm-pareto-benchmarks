@@ -1,5 +1,5 @@
 """NL → profile compiler tests (Doc-2 §17): deterministic + auditable."""
-from llmmeta.query_compiler import compile_query
+from llm_pareto.query_compiler import compile_query
 
 
 def test_deep_research_tradeoff():

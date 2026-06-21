@@ -3,9 +3,9 @@ import json
 import textwrap
 from pathlib import Path
 
-from llmmeta.adapters import vendor_claims, hf_official
-from llmmeta.adapters.vendor_claims import _verify
-from llmmeta.fetch import Snapshot
+from llm_pareto.adapters import vendor_claims, hf_official
+from llm_pareto.adapters.vendor_claims import _verify
+from llm_pareto.fetch import Snapshot
 
 AS_OF = "2026-06-18"
 

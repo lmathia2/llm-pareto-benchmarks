@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from llmmeta.fetch import load_fixture
-from llmmeta.adapters import openevals, openrouter, lmarena
-from llmmeta.store import Store
-from llmmeta.pipeline import recompute_normalized, integrity_check
+from llm_pareto.fetch import load_fixture
+from llm_pareto.adapters import openevals, openrouter, lmarena
+from llm_pareto.store import Store
+from llm_pareto.pipeline import recompute_normalized, integrity_check
 
 FIX = Path("tests/fixtures")
 AS_OF = "2026-06-18"

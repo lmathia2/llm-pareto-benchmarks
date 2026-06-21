@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("fastapi")
-import llmmeta.server as srv
+import llm_pareto.server as srv
 
 pytestmark = pytest.mark.skipif(
     srv.app is None or not Path(srv.DB_PATH).exists(),

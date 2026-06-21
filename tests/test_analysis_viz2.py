@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from llmmeta.adapters import openevals
-from llmmeta.fetch import load_fixture
-from llmmeta.pipeline import recompute_normalized
-from llmmeta.store import Store
-from llmmeta.analysis import coverage_matrix
+from llm_pareto.adapters import openevals
+from llm_pareto.fetch import load_fixture
+from llm_pareto.pipeline import recompute_normalized
+from llm_pareto.store import Store
+from llm_pareto.analysis import coverage_matrix
 
 FIX = Path("tests/fixtures")
 AS_OF = "2026-06-18"
@@ -38,14 +38,14 @@ def test_coverage_matrix_shape(store):
 
 def test_coverage_heatmap_builds():
     plotly = pytest.importorskip("plotly")  # noqa
-    from llmmeta.viz import coverage_heatmap
+    from llm_pareto.viz import coverage_heatmap
     fig = coverage_heatmap(["m1", "m2"], ["b1", "b2"], [[0.1, None], [0.9, 0.5]])
     assert fig.data[0].type == "heatmap"
 
 
 def test_router_accepts_profile_dict(store):
     # build a minimal coding profile dict and route on it (no file)
-    from llmmeta.router import route
+    from llm_pareto.router import route
     prof = {
         "profile": {"name": "t"},
         "constraints": {"require_price": True, "min_evidence_coverage": 0.0},
@@ -62,7 +62,7 @@ def test_router_accepts_profile_dict(store):
 
 def test_router_figure_builds():
     pytest.importorskip("plotly")
-    from llmmeta.viz import router_figure
+    from llm_pareto.viz import router_figure
     rr = {
         "request": {"effective_threshold": 0.5},
         "eligible_points": [

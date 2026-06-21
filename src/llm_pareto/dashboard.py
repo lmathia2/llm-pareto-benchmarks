@@ -6,7 +6,7 @@ rationale. Sliders let you override the compiled budget/weights/risk and watch
 the frontier + recommendation recompute live.
 
     pip install '.[viz]'
-    llmmeta dashboard            # or: streamlit run src/llmmeta/dashboard.py
+    llm-pareto dashboard            # or: streamlit run src/llm_pareto/dashboard.py
 """
 from __future__ import annotations
 
@@ -14,16 +14,16 @@ import os
 
 import streamlit as st
 
-from llmmeta.store import Store
-from llmmeta.query_compiler import compile_query
-from llmmeta.recommend import run_profile
-from llmmeta.explain import answer_text
-from llmmeta.viz import pareto_figure, coverage_heatmap, router_figure, routes_figure
-from llmmeta.analysis import coverage_matrix, lineage_for, list_join_keys, list_openrouter_slugs
-from llmmeta.router import route as route_call
-from llmmeta.routes import fetch_provider_routes
+from llm_pareto.store import Store
+from llm_pareto.query_compiler import compile_query
+from llm_pareto.recommend import run_profile
+from llm_pareto.explain import answer_text
+from llm_pareto.viz import pareto_figure, coverage_heatmap, router_figure, routes_figure
+from llm_pareto.analysis import coverage_matrix, lineage_for, list_join_keys, list_openrouter_slugs
+from llm_pareto.router import route as route_call
+from llm_pareto.routes import fetch_provider_routes
 
-DB = os.environ.get("LLMMETA_DB", "outputs/leaderboard.db")
+DB = os.environ.get("LLM_PARETO_DB", "outputs/leaderboard.db")
 
 st.set_page_config(page_title="LLM Meta-Leaderboard", layout="wide")
 
@@ -34,7 +34,7 @@ def get_store():
 
 
 # default to the latest snapshot present so the UI works against any rebuild date
-AS_OF = os.environ.get("LLMMETA_AS_OF") or get_store().latest_data_date() or "2026-06-18"
+AS_OF = os.environ.get("LLM_PARETO_AS_OF") or get_store().latest_data_date() or "2026-06-18"
 
 st.title("🧭 LLM Meta-Leaderboard")
 st.caption(f"Ask in plain English. Data snapshot: {AS_OF} · warehouse: `{DB}`")
@@ -131,7 +131,7 @@ with tab_cov:
         st.plotly_chart(coverage_heatmap(models, benches, z), width="stretch")
         st.caption(f"{len(models)} models × {len(benches)} benchmark cohorts shown.")
     else:
-        st.info("No normalized observations yet — run `llmmeta normalize`.")
+        st.info("No normalized observations yet — run `llm-pareto normalize`.")
 
 with tab_lin:
     st.subheader("Evidence lineage — where every number comes from")

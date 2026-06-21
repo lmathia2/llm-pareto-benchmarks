@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from llmmeta.adapters import openevals, openrouter
-from llmmeta.fetch import load_fixture
-from llmmeta.pipeline import recompute_normalized
-from llmmeta.router import route, predict_pass
-from llmmeta.store import Store
+from llm_pareto.adapters import openevals, openrouter
+from llm_pareto.fetch import load_fixture
+from llm_pareto.pipeline import recompute_normalized
+from llm_pareto.router import route, predict_pass
+from llm_pareto.store import Store
 
 FIX = Path("tests/fixtures")
 AS_OF = "2026-06-18"

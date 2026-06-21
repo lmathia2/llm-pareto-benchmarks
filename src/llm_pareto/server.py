@@ -5,7 +5,7 @@ decision engines. Every recommendation response carries the interpreted profile,
 data dates, evidence coverage, and assumptions (spec §18). FastAPI is optional:
 
     pip install '.[server]'
-    uvicorn llmmeta.server:app --reload
+    uvicorn llm_pareto.server:app --reload
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def _rows(sql: str, params: tuple = (), limit: int = 500) -> list[dict]:
 
 
 if FastAPI is not None:
-    app = FastAPI(title="llmmeta meta-leaderboard", version="0.1.0")
+    app = FastAPI(title="llm-pareto meta-leaderboard", version="0.1.0")
 
     class RecommendRequest(BaseModel):
         profile: str                      # profile name (in profiles/) or path

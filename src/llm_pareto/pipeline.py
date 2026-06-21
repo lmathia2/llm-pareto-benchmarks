@@ -14,16 +14,16 @@ from .store import Store
 
 # adapter_id -> (module path, fetch fn name)
 LIVE_ADAPTERS = {
-    "openevals": ("llmmeta.adapters.openevals", "fetch_live"),
-    "openrouter": ("llmmeta.adapters.openrouter", "fetch_live"),
-    "lmarena": ("llmmeta.adapters.lmarena", "fetch_live"),
+    "openevals": ("llm_pareto.adapters.openevals", "fetch_live"),
+    "openrouter": ("llm_pareto.adapters.openrouter", "fetch_live"),
+    "lmarena": ("llm_pareto.adapters.lmarena", "fetch_live"),
     # Tier-B/C (expanded scope): aider is cleanly accessible; artificial_analysis is
     # terms-gated and records a blocked condition unless explicitly opted in.
-    "aider_polyglot": ("llmmeta.adapters.aider_polyglot", "fetch_live"),
-    "artificial_analysis": ("llmmeta.adapters.artificial_analysis", "fetch_live"),
-    "vendor_claims": ("llmmeta.adapters.vendor_claims", "fetch_live"),
-    "hf_official": ("llmmeta.adapters.hf_official", "fetch_live"),
-    "provider_pricing": ("llmmeta.adapters.provider_pricing", None),  # seed-file driven
+    "aider_polyglot": ("llm_pareto.adapters.aider_polyglot", "fetch_live"),
+    "artificial_analysis": ("llm_pareto.adapters.artificial_analysis", "fetch_live"),
+    "vendor_claims": ("llm_pareto.adapters.vendor_claims", "fetch_live"),
+    "hf_official": ("llm_pareto.adapters.hf_official", "fetch_live"),
+    "provider_pricing": ("llm_pareto.adapters.provider_pricing", None),  # seed-file driven
 }
 
 

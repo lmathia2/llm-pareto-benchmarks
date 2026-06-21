@@ -1,5 +1,5 @@
 [project]
-name = "llmmeta"
+name = "llm-pareto-benchmarks"
 version = "0.1.0"
 description = "Provenance-first, task-typed LLM meta-leaderboard: reproducible cost-quality meta-analysis across published benchmarks and leaderboards."
 readme = "README.md"
@@ -16,7 +16,7 @@ server = ["fastapi>=0.110", "uvicorn>=0.29", "pydantic>=2.0"]
 viz = ["streamlit>=1.33", "plotly>=5.20"]
 
 [project.scripts]
-llmmeta = "llmmeta.cli:main"
+llm-pareto = "llm_pareto.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]

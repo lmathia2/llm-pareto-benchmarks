@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from llmmeta.adapters import aider_polyglot, artificial_analysis
-from llmmeta.adapters.base import SchemaDriftError
-from llmmeta.fetch import Snapshot, load_fixture
+from llm_pareto.adapters import aider_polyglot, artificial_analysis
+from llm_pareto.adapters.base import SchemaDriftError
+from llm_pareto.fetch import Snapshot, load_fixture
 
 FIX = Path("tests/fixtures")
 AS_OF = "2026-06-18"

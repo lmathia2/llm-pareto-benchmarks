@@ -17,7 +17,7 @@ try:
 except ImportError:  # pragma: no cover - httpx is a declared dep
     httpx = None
 
-USER_AGENT = "llmmeta-meta-leaderboard/0.1 (+research; respects robots/terms)"
+USER_AGENT = "llm-pareto-benchmarks/0.1 (+research; respects robots/terms)"
 RAW_ROOT = Path("data/raw")
 
 

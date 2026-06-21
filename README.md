@@ -1,9 +1,9 @@
-# llmmeta — LLM Meta-Leaderboard
+# llm-pareto — LLM Meta-Leaderboard
 
 Pick the best LLM for **a specific task**, trading off quality, cost, and context — and re-run it
 whenever new models ship.
 
-Instead of one universal ranking, `llmmeta` pulls numbers from published benchmarks and live pricing,
+Instead of one universal ranking, `llm-pareto` pulls numbers from published benchmarks and live pricing,
 normalizes them honestly, and returns a **cost-quality Pareto frontier** filtered by your constraints.
 The same data gives different winners for "deep research under $3" vs. "cheapest coding agent."
 
@@ -29,7 +29,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -e '.[dev,analytics,server]'    # add ,viz for the dashboard
 ```
 
-Requires Python ≥ 3.11. The CLI installs as `llmmeta` (also runnable as `python -m llmmeta.cli`).
+Requires Python ≥ 3.11. The CLI installs as `llm-pareto` (also runnable as `python -m llm_pareto.cli`).
 
 ## Quick start
 
@@ -43,8 +43,8 @@ That runs the pipeline end to end: `init → registry → discover → ingest �
 recommend → export`. Then ask it questions:
 
 ```bash
-llmmeta ask --query "best model for deep research with a good quality/cost tradeoff"
-llmmeta recommend --profile profiles/coding_agent_balanced.toml --output-dir outputs/coding
+llm-pareto ask --query "best model for deep research with a good quality/cost tradeoff"
+llm-pareto recommend --profile profiles/coding_agent_balanced.toml --output-dir outputs/coding
 ```
 
 ## Commands
@@ -53,19 +53,19 @@ All commands take `--db` (default `outputs/leaderboard.db`) and print JSON to st
 
 | Command | What it does |
 |---|---|
-| `llmmeta init` | Create the schema / empty warehouse. |
-| `llmmeta registry import <csv>` | Load the curated source census (`research/leaderboard_census.csv`). |
-| `llmmeta discover hf-official` | Snapshot the Hugging Face official-benchmark list. |
-| `llmmeta ingest --source <name>` | Fetch + parse one source (see list below). |
-| `llmmeta prices refresh` | Refresh provider pricing records. |
-| `llmmeta normalize` | Compute benchmark-local normalized scores. |
-| `llmmeta recommend --profile <toml>` | Run a profile → Pareto frontier + recommended default. |
-| `llmmeta ask --query "<text>"` | Plain-English question → compiled profile → answer. Add `--json`. |
-| `llmmeta route --profile <toml> --risk <tier>` | Cheapest model clearing a risk-tier quality bar. |
-| `llmmeta export catalogs` | Dump catalog CSVs to `outputs/catalogs`. |
-| `llmmeta check` | Integrity checks (FK, normalized ∈ [0,1], cohort sizes). |
-| `llmmeta dashboard` | Launch the Streamlit UI (needs `.[viz]`). |
-| `llmmeta analytics parquet` / `postgres-ddl` | Export Parquet / generate Postgres DDL. |
+| `llm-pareto init` | Create the schema / empty warehouse. |
+| `llm-pareto registry import <csv>` | Load the curated source census (`research/leaderboard_census.csv`). |
+| `llm-pareto discover hf-official` | Snapshot the Hugging Face official-benchmark list. |
+| `llm-pareto ingest --source <name>` | Fetch + parse one source (see list below). |
+| `llm-pareto prices refresh` | Refresh provider pricing records. |
+| `llm-pareto normalize` | Compute benchmark-local normalized scores. |
+| `llm-pareto recommend --profile <toml>` | Run a profile → Pareto frontier + recommended default. |
+| `llm-pareto ask --query "<text>"` | Plain-English question → compiled profile → answer. Add `--json`. |
+| `llm-pareto route --profile <toml> --risk <tier>` | Cheapest model clearing a risk-tier quality bar. |
+| `llm-pareto export catalogs` | Dump catalog CSVs to `outputs/catalogs`. |
+| `llm-pareto check` | Integrity checks (FK, normalized ∈ [0,1], cohort sizes). |
+| `llm-pareto dashboard` | Launch the Streamlit UI (needs `.[viz]`). |
+| `llm-pareto analytics parquet` / `postgres-ddl` | Export Parquet / generate Postgres DDL. |
 
 `--as-of YYYY-MM-DD` pins a date; otherwise queries use the latest snapshot in the warehouse.
 
@@ -104,13 +104,13 @@ See `profiles/finance_deep_research_under_3.toml` for a full annotated example.
 Ingest from the frozen fixtures in `tests/fixtures/` — no network, fully deterministic:
 
 ```bash
-llmmeta init
+llm-pareto init
 for s in openevals openrouter lmarena aider_polyglot; do
-  llmmeta ingest --source $s --as-of 2026-06-18 \
+  llm-pareto ingest --source $s --as-of 2026-06-18 \
     --fixture sample.$([ $s = aider_polyglot ] && echo txt || echo json)
 done
-llmmeta normalize
-llmmeta recommend --profile profiles/finance_deep_research_under_3.toml
+llm-pareto normalize
+llm-pareto recommend --profile profiles/finance_deep_research_under_3.toml
 ```
 
 `make refresh-live` does the opposite: a clean rebuild from live sources with real retrieval timestamps.
@@ -118,7 +118,7 @@ llmmeta recommend --profile profiles/finance_deep_research_under_3.toml
 ## API
 
 ```bash
-uvicorn llmmeta.server:app --reload
+uvicorn llm_pareto.server:app --reload
 # GET  /sources /entities /benchmarks /observations /prices /lineage/{id} /profiles
 # POST /recommend {"profile": "finance_deep_research_under_3"}
 # POST /route     {"profile": "coding_agent_balanced", "risk_tier": "low"}
@@ -128,13 +128,13 @@ uvicorn llmmeta.server:app --reload
 
 ```bash
 pytest -q          # math, adapters, router, API
-llmmeta check      # warehouse integrity
+llm-pareto check      # warehouse integrity
 ```
 
 ## Project layout
 
 ```
-src/llmmeta/
+src/llm_pareto/
   cli.py            command entry points
   pipeline.py       ingest / normalize / integrity orchestration
   adapters/         one module per source (fetch + parse → canonical records)
