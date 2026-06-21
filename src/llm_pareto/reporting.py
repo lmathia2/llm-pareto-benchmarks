@@ -17,8 +17,8 @@ def write_recommendation(result: dict, output_dir: str | Path) -> dict[str, str]
     md = _markdown(result)
     (out / f"{name}.md").write_text(md)
 
-    fcols = ["deployment_id", "provider", "quality_0_100", "coverage", "expected_cost",
-             "p95_cost", "context_tokens", "pricing_basis", "price_as_of"]
+    fcols = ["deployment_id", "provider", "access", "evidence", "quality_0_100", "coverage",
+             "expected_cost", "p95_cost", "context_tokens", "pricing_basis", "price_as_of"]
     with open(out / f"{name}_pareto.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fcols)
         w.writeheader()
@@ -44,10 +44,11 @@ def _markdown(result: dict) -> str:
         lines += ["## Recommended default", "", "_No eligible candidate under the profile constraints._", ""]
 
     lines += ["## Pareto frontier", "",
-              "| Deployment | Provider | Quality | Coverage | Expected $ | p95 $ | Context |",
-              "|---|---|---:|---:|---:|---:|---:|"]
+              "| Deployment | Provider | Access | Evidence | Quality | Coverage | Expected $ | p95 $ | Context |",
+              "|---|---|---|---|---:|---:|---:|---:|---:|"]
     for r in result["frontier"]:
-        lines.append(f"| {r['deployment_id']} | {r['provider']} | {r['quality_0_100']} | "
+        lines.append(f"| {r['deployment_id']} | {r['provider']} | {r.get('access','')} | "
+                     f"{r.get('evidence','')} | {r['quality_0_100']} | "
                      f"{r['coverage']} | {r['expected_cost']} | {r['p95_cost']} | {r['context_tokens']} |")
     lines.append("")
 

@@ -39,6 +39,13 @@ evidence) is joined to price (deployment evidence) by a conservative `join_key` 
 name / model spec). This under-joins rather than mis-joins — cross-source coverage is therefore partial
 and reported honestly via the `coverage` field, not hidden.
 
+Quality evidence is joined to a priced deployment by the most specific match available
+(`recommend._resolve_scores`): exact `join_key` → **canonical key** (publication-date stamps and provider
+prefixes stripped, but the version number preserved so `opus-4-5` and `opus-4-8` never merge) → **family
+proxy**. Non-exact matches are shrunk toward the prior and tagged (`canonical_key` / `family_proxy`).
+Every model also carries an **`access`** facet (`api` vs `open_weight`, `identity.access_type`); a
+deployment with a price but no joinable quality is flagged `evidence = price_only` rather than dropped.
+
 Proxy evidence is shrunk toward a neutral prior (`identity.shrink_to_prior`):
 `transferred = prior + strength·(observed − prior)`, with policy strengths (exact 0.95, family 0.75,
 system→family 0.80). Transfer strengths are **policy choices, not measured constants**, and are exposed

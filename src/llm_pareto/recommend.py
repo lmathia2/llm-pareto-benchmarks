@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .cost import Workload, estimate_cost
+from .identity import TRANSFER_STRENGTH, access_type, canonical_key, shrink_to_prior
 from .pareto import Candidate, best_dominator, filter_eligible, pareto_frontier
 from .scoring import weighted_quality
 from .store import Store
@@ -28,25 +29,58 @@ def load_profile(path: str | Path) -> dict:
     return tomllib.loads(Path(path).read_text())
 
 
-def _family_scores(store: Store) -> dict[str, dict[str, list[float]]]:
-    """join_key -> task_family -> [normalized scores] across all model observations."""
+def _nested():
+    return defaultdict(lambda: defaultdict(list))
+
+
+def _family_scores(store: Store) -> dict[str, dict[str, dict[str, list[float]]]]:
+    """Index normalized model scores three ways so quality can be joined to pricing
+    even when sources name the same model differently:
+      exact  : join_key            -> task_family -> [scores]
+      canon  : canonical_key       -> task_family -> [scores]   (date/prefix-stripped)
+      family : family_id           -> task_family -> [scores]   (proxy fallback)
+    Resolution prefers exact, then canon, then family (see _resolve_scores)."""
     rows = store.query(
         """SELECT n.normalized_score AS ns, b.metadata_json AS bmeta, e.metadata_json AS emeta,
-                  e.entity_id AS eid
+                  e.entity_id AS eid, e.family_id AS fam
            FROM normalized_observations n
            JOIN benchmarks b ON b.benchmark_id = n.benchmark_id
            JOIN entities e ON e.entity_id = n.entity_id"""
     )
-    out: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    exact, canon, family = _nested(), _nested(), _nested()
     for r in rows:
         bmeta = json.loads(r["bmeta"] or "{}")
         emeta = json.loads(r["emeta"] or "{}")
-        family = bmeta.get("task_family")
-        if not family:
+        fam_name = bmeta.get("task_family")
+        if not fam_name:
             continue
         join_key = emeta.get("join_key") or r["eid"]
-        out[join_key][family].append(r["ns"])
-    return out
+        exact[join_key][fam_name].append(r["ns"])
+        ck = canonical_key(join_key)
+        if ck:
+            canon[ck][fam_name].append(r["ns"])
+        if r["fam"]:
+            family[r["fam"]][fam_name].append(r["ns"])
+    return {"exact": exact, "canon": canon, "family": family}
+
+
+def _resolve_scores(index: dict, join_key: str, family_id: str | None):
+    """Find task-family scores for a deployment, preferring the most specific
+    match. Returns (fam_scores, transfer_strength, match_relation)."""
+    ex = index["exact"].get(join_key)
+    if ex:
+        return ex, TRANSFER_STRENGTH["exact"], "exact"
+    ck = canonical_key(join_key)
+    cn = index["canon"].get(ck) if ck else None
+    # only a *cross-name* canonical hit counts (avoid relabelling an exact miss
+    # that canon-maps to itself with no extra evidence)
+    if cn and ck != join_key:
+        return cn, TRANSFER_STRENGTH["lmarena_exact"], "canonical_key"
+    if family_id:
+        fm = index["family"].get(family_id)
+        if fm:
+            return fm, TRANSFER_STRENGTH["family_proxy"], "family_proxy"
+    return {}, 0.0, "no_match"
 
 
 def _latest_prices(store: Store, as_of: str) -> list[dict]:
@@ -67,7 +101,9 @@ def _latest_prices(store: Store, as_of: str) -> list[dict]:
 
 
 def _dimension_value(dim_families: list[str], fam_scores: dict[str, list[float]],
-                     context_tokens: Optional[int], ref_tokens: int) -> tuple[Optional[float], str]:
+                     context_tokens: Optional[int], ref_tokens: int,
+                     transfer_strength: float, missing_prior: float,
+                     match_relation: str) -> tuple[Optional[float], str]:
     if dim_families == [CONTEXT_SENTINEL]:
         if not context_tokens:
             return None, "no_context"
@@ -77,7 +113,12 @@ def _dimension_value(dim_families: list[str], fam_scores: dict[str, list[float]]
         vals.extend(fam_scores.get(fam, []))
     if not vals:
         return None, "no_evidence"
-    return sum(vals) / len(vals), "model_to_deployment_family"
+    mean = sum(vals) / len(vals)
+    if transfer_strength < 1.0:
+        # proxy evidence (canonical/family match): shrink toward the neutral prior
+        mean = shrink_to_prior(mean, transfer_strength, prior=missing_prior)
+        return mean, match_relation  # e.g. "canonical_key" / "family_proxy"
+    return mean, "model_to_deployment_family"
 
 
 def build_candidates(store: Store, prof: dict, as_of: str) -> list[Candidate]:
@@ -113,20 +154,32 @@ def build_candidates(store: Store, prof: dict, as_of: str) -> list[Candidate]:
     for p in priced:
         emeta = json.loads(p["emeta"] or "{}")
         join_key = emeta.get("join_key") or p["family_id"]
-        fam_scores = fam_scores_by_key.get(join_key, {})
+        fam_scores, strength, match_rel = _resolve_scores(fam_scores_by_key, join_key, p["family_id"])
         context_tokens = p["context_tokens"] or emeta.get("context_length")
+        access = access_type(p["org"], p["dname"])
 
         components: dict[str, Optional[float]] = {}
         relations: dict[str, str] = {}
         for dim, w in weights.items():
             fams = dim_map.get(dim, [dim])
-            val, rel = _dimension_value(fams, fam_scores, context_tokens, ref_tokens)
+            val, rel = _dimension_value(fams, fam_scores, context_tokens, ref_tokens,
+                                        strength, missing_prior, match_rel)
             components[dim] = val
             relations[dim] = rel
 
         quality, coverage, imputed = weighted_quality(
             components, weights, missing_prior=missing_prior, missing_penalty=missing_penalty
         )
+        # evidence flag: did any non-context dimension get a real (non-imputed) value?
+        has_quality = any(
+            v is not None for d, v in components.items() if dim_map.get(d, [d]) != [CONTEXT_SENTINEL]
+        )
+        if not has_quality:
+            evidence = "price_only"
+        elif match_rel in ("canonical_key", "family_proxy"):
+            evidence = "transferred"
+        else:
+            evidence = "measured"
 
         # cost
         if p["input_usd_per_million"] is not None and p["output_usd_per_million"] is not None:
@@ -152,6 +205,7 @@ def build_candidates(store: Store, prof: dict, as_of: str) -> list[Candidate]:
             payload={
                 "deployment_id": p["deployment_id"], "display_name": p["dname"],
                 "provider": p["org"], "family_id": p["family_id"], "join_key": join_key,
+                "access": access, "evidence": evidence, "evidence_match": match_rel,
                 "quality_0_100": round(quality * 100, 2), "coverage": round(coverage, 3),
                 "expected_cost": round(expected, 4), "p95_cost": round(p95, 4),
                 "context_tokens": context_tokens, "components": {k: (round(v, 3) if v is not None else None) for k, v in components.items()},
@@ -165,12 +219,14 @@ def build_candidates(store: Store, prof: dict, as_of: str) -> list[Candidate]:
     return candidates
 
 
-def eligibility_predicates(cons: dict):
-    """Build named eligibility predicates from profile constraints (spec §15)."""
+def eligibility_predicates(cons: dict, coverage_floor: Optional[float] = None):
+    """Build named eligibility predicates from profile constraints (spec §15).
+    `coverage_floor` overrides the profile's min_evidence_coverage when provided
+    (pass 0.0 to surface price-only candidates with a caveat instead of dropping)."""
     max_cost = cons.get("max_cost_usd")
     min_ctx = cons.get("min_context_tokens")
     require_price = cons.get("require_price", True)
-    min_cov = cons.get("min_evidence_coverage")
+    min_cov = coverage_floor if coverage_floor is not None else cons.get("min_evidence_coverage")
     preds = []
     if require_price:
         preds.append(("missing_price", lambda c: c.payload["input_usd_per_million"] is not None or c.payload.get("blended")))
@@ -207,17 +263,35 @@ def _knee_point(frontier: list[Candidate]) -> Candidate | None:
     return best
 
 
-def run_profile(store: Store, prof: dict, as_of: str, selection: str = "quality") -> dict:
+def _access_summary(candidates: list[Candidate]) -> dict:
+    """Counts by access type and evidence flag — surfaces the API/open-weight
+    coverage gap honestly (e.g. 'N API models priced but unscored')."""
+    out: dict[str, dict[str, int]] = {}
+    for c in candidates:
+        a = c.payload.get("access", "open_weight")
+        e = c.payload.get("evidence", "measured")
+        out.setdefault(a, {}).setdefault(e, 0)
+        out[a][e] += 1
+    return out
+
+
+def run_profile(store: Store, prof: dict, as_of: str, selection: str = "quality",
+                coverage_floor: Optional[float] = None,
+                access_filter: Optional[str] = None) -> dict:
     """Core engine on a compiled profile dict. `selection` picks the headline
     default: 'quality' (top of frontier), 'cost' (cheapest frontier), or
-    'tradeoff'/'balanced' (knee point)."""
+    'tradeoff'/'balanced' (knee point). `coverage_floor` relaxes the evidence
+    filter to show price-only models with a caveat; `access_filter` restricts to
+    'api' or 'open_weight' deployments."""
     weights = prof["weights"]
     dim_map = prof.get("dimension_map", {})
     cons = prof.get("constraints", {})
     wl_cfg = prof.get("workload", {})
 
     candidates = build_candidates(store, prof, as_of)
-    preds = eligibility_predicates(cons)
+    if access_filter in ("api", "open_weight"):
+        candidates = [c for c in candidates if c.payload.get("access") == access_filter]
+    preds = eligibility_predicates(cons, coverage_floor=coverage_floor)
     eligible, exclusions = filter_eligible(candidates, preds)
     frontier = pareto_frontier(eligible)
     frontier.sort(key=lambda c: (-c.quality, c.cost))
@@ -253,6 +327,9 @@ def run_profile(store: Store, prof: dict, as_of: str, selection: str = "quality"
         "selection_rule": rule,
         "n_candidates": len(candidates),
         "n_eligible": len(eligible),
+        "access_filter": access_filter,
+        "coverage_floor": coverage_floor,
+        "access_summary": _access_summary(candidates),
         "recommended_default": default.payload if default else None,
         "frontier": [c.payload for c in frontier],
         "dominated": sorted(dominated, key=lambda d: -d["quality"])[:25],

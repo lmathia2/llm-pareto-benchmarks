@@ -21,6 +21,7 @@ import tomllib
 from pathlib import Path
 
 from ..fetch import Snapshot, fetch
+from ..identity import access_type
 from ..models import AdapterResult, BenchmarkRecord, EntityRecord, Observation, SourceRecord
 from . import register
 from .base import slug
@@ -129,10 +130,18 @@ def parse(snapshot: Snapshot, as_of: str) -> AdapterResult:
 
         jk = c.get("join_key") or slug(c["model"])
         ent_id = f"{slug(c.get('vendor','vendor'))}/{slug(c['model'])}"
+        # access axis (api vs open_weight). Honor an explicit `access`/`proprietary`
+        # in the claim; otherwise infer from vendor + model name.
+        if "access" in c:
+            access = c["access"]
+        elif "proprietary" in c:
+            access = "api" if c["proprietary"] else "open_weight"
+        else:
+            access = access_type(c.get("vendor"), c["model"])
         res.entities.append(EntityRecord(
             entity_id=ent_id, display_name=c["model"], entity_type="model",
             organization=c.get("vendor"), family_id=jk,
-            metadata={"join_key": jk, "proprietary": c.get("proprietary", True)},
+            metadata={"join_key": jk, "access": access},
         ))
         res.observations.append(Observation(
             source_id=SOURCE_ID, benchmark_id=bench_id, entity_id=ent_id, raw_score=score,

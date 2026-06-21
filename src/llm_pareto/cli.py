@@ -132,9 +132,12 @@ def cmd_analytics(args):
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="llm-pareto")
-    # parent carries --db so it can appear before OR after the subcommand
+    # --db can appear before OR after the subcommand. The top-level parser owns
+    # the default; the per-subcommand copy uses SUPPRESS so that when --db is
+    # given *before* the subcommand, the subparser does not clobber it with a
+    # second default.
     parent = argparse.ArgumentParser(add_help=False)
-    parent.add_argument("--db", default="outputs/leaderboard.db")
+    parent.add_argument("--db", default=argparse.SUPPRESS)
     p.add_argument("--db", default="outputs/leaderboard.db")
     sub = p.add_subparsers(dest="cmd", required=True)
 

@@ -27,9 +27,23 @@ collection, we **record that condition** (status `partial-blocked`) rather than 
 | Vendor claims (model cards + announcements) | C | vendor/aggregator pages | **live + verified** — number must appear on the fetched page or it's skipped |
 | HF official per-dataset leaderboards | A/B | `…/datasets/{id}/leaderboard` | **token-gated** — needs `HF_TOKEN`; blocked otherwise |
 
-### Proprietary-model coverage
+### Access axis & API-model coverage
 
-OpenEvals (the open-weight quality source) carries almost no proprietary frontier models. To bring
+Every model/deployment is tagged **`access` = `api` | `open_weight`** (`identity.access_type`): API-only
+models (Claude, GPT, Gemini, Grok) are served solely behind a vendor API; open-weight models publish
+downloadable weights. This is a first-class facet — the dashboard and `recommend` outputs expose it, and
+you can filter to one access type.
+
+The axis also explains a real coverage gap: OpenEvals (the open-weight quality backbone) carries almost
+no API-only models, so many current API deployments are **priced but unscored**. We handle this three ways
+rather than hiding it:
+1. **Join bridging** (`recommend._resolve_scores`) — quality evidence is matched to pricing by exact
+   `join_key`, then a date/prefix-stripped **canonical key** (same model, different source naming;
+   version numbers are *never* stripped), then a **family proxy** shrunk toward the prior. The match
+   relation (`exact` / `canonical_key` / `family_proxy`) is recorded per dimension.
+2. **`evidence` flag** — each candidate is `measured` / `transferred` / `price_only`; a `coverage_floor`
+   surfaces `price_only` models on the frontier with a caveat instead of silently dropping them.
+3. **`vendor_claims`** — the durable fix for API-model coverage. To bring
 Claude / GPT-5.x / Gemini / Mistral into the rankings we use **`vendor_claims`**: a curated,
 provenance-stamped table of self-reported numbers (`config/vendor_claims.toml`) where the adapter
 **fetches the cited source page and verifies the score literally appears near the benchmark keyword**

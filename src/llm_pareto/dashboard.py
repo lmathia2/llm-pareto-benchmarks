@@ -56,6 +56,14 @@ with st.sidebar:
                        float(prof["constraints"].get("max_cost_usd", 5.0)), 0.05)
     min_cov = st.slider("Min evidence coverage", 0.0, 1.0,
                         float(prof["constraints"].get("min_evidence_coverage", 0.30)), 0.05)
+    st.subheader("Access & evidence")
+    access_choice = st.radio("Access type", ["all", "api", "open_weight"], horizontal=True,
+                             help="api = served only behind a vendor API (Claude/GPT/Gemini); "
+                                  "open_weight = downloadable weights you can self-host.")
+    show_price_only = st.checkbox(
+        "Show price-only models (no quality evidence)",
+        help="Many current API models are priced but not yet covered by any benchmark source. "
+             "Show them on the frontier, clearly flagged, instead of dropping them.")
     st.subheader("Dimension weights")
     new_weights = {}
     for dim, w in prof["weights"].items():
@@ -71,7 +79,20 @@ tab_ask, tab_router, tab_cov, tab_lin, tab_routes = st.tabs(
     ["🔎 Ask & Pareto", "🚦 Router (cheapest-passing)", "🗺️ Coverage", "🔬 Lineage", "🛣️ Routes"])
 
 with tab_ask:
-    result = run_profile(get_store(), prof, AS_OF, selection=objective)
+    access_filter = None if access_choice == "all" else access_choice
+    result = run_profile(get_store(), prof, AS_OF, selection=objective,
+                         access_filter=access_filter,
+                         coverage_floor=0.0 if show_price_only else None)
+    # honest coverage banner: how many priced models lack any benchmark evidence
+    summ = result.get("access_summary", {})
+    api_only = summ.get("api", {})
+    api_unscored = api_only.get("price_only", 0)
+    api_scored = api_only.get("measured", 0) + api_only.get("transferred", 0)
+    if api_unscored:
+        st.info(f"ℹ️ **API-access coverage:** {api_scored} API model(s) have benchmark evidence; "
+                f"**{api_unscored} are priced but unscored** (no published benchmark joined yet). "
+                + ("They're shown below, flagged `price_only`." if show_price_only
+                   else "Tick *Show price-only models* in the sidebar to see them, or add evidence via `vendor_claims`."))
     left, right = st.columns([3, 2])
     with left:
         st.subheader("Cost–quality frontier")
@@ -82,8 +103,10 @@ with tab_ask:
     st.subheader("Pareto frontier")
     if result["frontier"]:
         st.dataframe([
-            {"deployment": c["deployment_id"], "provider": c["provider"], "quality": c["quality_0_100"],
-             "coverage": c["coverage"], "expected $": c["expected_cost"], "p95 $": c["p95_cost"],
+            {"deployment": c["deployment_id"], "provider": c["provider"],
+             "access": c.get("access"), "evidence": c.get("evidence"),
+             "quality": c["quality_0_100"], "coverage": c["coverage"],
+             "expected $": c["expected_cost"], "p95 $": c["p95_cost"],
              "context": c["context_tokens"]}
             for c in result["frontier"]
         ], width="stretch", hide_index=True)
