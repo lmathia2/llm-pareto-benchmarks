@@ -1,0 +1,144 @@
+# Vendor self-reported benchmark claims (model cards + release announcements).
+#
+# Each claim is INGESTED ONLY IF the adapter verifies the score literally appears
+# near the benchmark keyword on the fetched source page (raw snapshot stored).
+# These are self-reported under vendor-chosen protocols → a separate cohort,
+# tagged self_reported/mixed-protocol, never merged with third-party harness runs.
+#
+# Numbers gathered 2026-06-18 from the cited sources. Re-verify on refresh.
+
+# ---------- GPQA Diamond ----------
+[[claim]]
+model = "Gemini 3 Pro"
+join_key = "google-gemini-3-pro"
+vendor = "Google"
+proprietary = true
+benchmark = "gpqa_diamond"
+metric = "accuracy"
+score = 91.9
+protocol_note = "vendor-reported; no-tools"
+source_url = "https://blog.google/products-and-platforms/products/gemini/gemini-3/"
+source_type = "announcement"
+
+[[claim]]
+model = "GPT-5.1"
+join_key = "openai-gpt-5-1"
+vendor = "OpenAI"
+proprietary = true
+benchmark = "gpqa_diamond"
+metric = "accuracy"
+score = 88.1
+protocol_note = "vendor-reported (via aggregator table)"
+source_url = "https://www.vellum.ai/blog/google-gemini-3-benchmarks"
+source_type = "aggregator"
+
+[[claim]]
+model = "DeepSeek-V3.2-Exp"
+join_key = "deepseek-deepseek-v3-2-exp"
+vendor = "DeepSeek"
+proprietary = false
+benchmark = "gpqa_diamond"
+metric = "accuracy"
+score = 79.9
+protocol_note = "model card eval table"
+source_url = "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/raw/main/README.md"
+source_type = "model_card"
+
+# ---------- Humanity's Last Exam ----------
+[[claim]]
+model = "Gemini 3 Pro"
+join_key = "google-gemini-3-pro"
+vendor = "Google"
+proprietary = true
+benchmark = "hle"
+metric = "accuracy"
+score = 37.5
+protocol_note = "vendor-reported; no-tools"
+source_url = "https://blog.google/products-and-platforms/products/gemini/gemini-3/"
+source_type = "announcement"
+
+[[claim]]
+model = "GPT-5.1"
+join_key = "openai-gpt-5-1"
+vendor = "OpenAI"
+proprietary = true
+benchmark = "hle"
+metric = "accuracy"
+score = 26.5
+protocol_note = "vendor-reported (via aggregator table)"
+source_url = "https://www.vellum.ai/blog/google-gemini-3-benchmarks"
+source_type = "aggregator"
+
+[[claim]]
+model = "DeepSeek-V3.2-Exp"
+join_key = "deepseek-deepseek-v3-2-exp"
+vendor = "DeepSeek"
+proprietary = false
+benchmark = "hle"
+metric = "accuracy"
+score = 19.8
+protocol_note = "model card eval table"
+source_url = "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/raw/main/README.md"
+source_type = "model_card"
+
+# ---------- SWE-bench Verified ----------
+[[claim]]
+model = "Gemini 3 Pro"
+join_key = "google-gemini-3-pro"
+vendor = "Google"
+proprietary = true
+benchmark = "swe_bench_verified"
+metric = "resolved_pct"
+score = 76.2
+protocol_note = "vendor-reported"
+source_url = "https://blog.google/products-and-platforms/products/gemini/gemini-3/"
+source_type = "announcement"
+
+[[claim]]
+model = "Claude Sonnet 4.5"
+join_key = "anthropic-claude-sonnet-4-5"
+vendor = "Anthropic"
+proprietary = true
+benchmark = "swe_bench_verified"
+metric = "resolved_pct"
+score = 77.2
+protocol_note = "vendor-reported (via aggregator table)"
+source_url = "https://www.vellum.ai/blog/google-gemini-3-benchmarks"
+source_type = "aggregator"
+
+[[claim]]
+model = "DeepSeek-V3.2-Exp"
+join_key = "deepseek-deepseek-v3-2-exp"
+vendor = "DeepSeek"
+proprietary = false
+benchmark = "swe_bench_verified"
+metric = "resolved_pct"
+score = 67.8
+protocol_note = "model card eval table"
+source_url = "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/raw/main/README.md"
+source_type = "model_card"
+
+# ---------- MMLU-Pro / Terminal-Bench (single-model so far; kept for honesty) ----------
+[[claim]]
+model = "DeepSeek-V3.2-Exp"
+join_key = "deepseek-deepseek-v3-2-exp"
+vendor = "DeepSeek"
+proprietary = false
+benchmark = "mmlu_pro"
+metric = "accuracy"
+score = 85.0
+protocol_note = "model card eval table"
+source_url = "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/raw/main/README.md"
+source_type = "model_card"
+
+[[claim]]
+model = "DeepSeek-V3.2-Exp"
+join_key = "deepseek-deepseek-v3-2-exp"
+vendor = "DeepSeek"
+proprietary = false
+benchmark = "terminal_bench"
+metric = "accuracy"
+score = 37.7
+protocol_note = "model card eval table"
+source_url = "https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Exp/raw/main/README.md"
+source_type = "model_card"

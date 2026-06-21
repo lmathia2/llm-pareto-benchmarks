@@ -1,0 +1,38 @@
+[profile]
+name = "coding_agent_balanced"
+as_of = "2026-06-18"
+description = "Pick a deployment for an autonomous coding agent: weight SWE/terminal agent skill, keep reasoning, moderate budget."
+
+[constraints]
+max_cost_usd = 5.0
+budget_basis = "p95"
+min_context_tokens = 100000
+require_price = true
+min_evidence_coverage = 0.50
+
+[workload]
+input_tokens = 400000
+output_tokens = 120000
+reasoning_tokens = 40000
+calls = 30
+retry_multiplier = 1.1
+fixed_tool_cost_usd = 0.05
+
+[uncertainty]
+p95_token_multiplier = 1.4
+p95_tool_multiplier = 1.15
+
+[weights]
+coding_agent = 0.60
+reasoning = 0.25
+context_headroom = 0.15
+
+[dimension_map]
+coding_agent = ["coding_agent"]
+reasoning = ["reasoning"]
+context_headroom = ["__context__"]
+
+[policy]
+missing_prior = 0.50
+missing_penalty = 0.10
+context_reference_tokens = 1000000

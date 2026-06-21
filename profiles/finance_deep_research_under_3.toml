@@ -1,0 +1,49 @@
+[profile]
+name = "finance_deep_research_under_3_usd"
+as_of = "2026-06-18"
+description = "Choose a primary LLM deployment for a finance deep-research agent under a per-research budget."
+
+[constraints]
+max_cost_usd = 3.0
+budget_basis = "p95"
+min_context_tokens = 200000
+require_price = true
+# exclude candidates whose quality is mostly imputed prior (spec §13 min-coverage guard)
+min_evidence_coverage = 0.30
+
+[workload]
+# token fields are TOTALS across one complete research job (spec §14.1)
+input_tokens = 225000
+output_tokens = 75000
+cached_input_tokens = 0
+cache_write_tokens = 0
+reasoning_tokens = 0
+calls = 20
+retry_multiplier = 1.0
+fixed_tool_cost_usd = 0.10
+
+[uncertainty]
+p95_token_multiplier = 1.35
+p95_tool_multiplier = 1.15
+
+[weights]
+general_intelligence = 0.35
+quant_finance_agent = 0.40
+human_preference = 0.15
+context_headroom = 0.10
+
+# Doc-1 task-family lens: maps each weighted dimension to the task families that
+# constitute it. "__context__" is the capacity feature computed from context size.
+[dimension_map]
+general_intelligence = ["reasoning"]
+quant_finance_agent = ["finance"]
+human_preference = ["preference"]
+context_headroom = ["__context__"]
+
+[policy]
+missing_prior = 0.50
+missing_penalty = 0.10
+qfbench_scaffold_transfer = 0.80
+lmarena_exact_transfer = 0.95
+lmarena_family_transfer = 0.75
+context_reference_tokens = 1000000

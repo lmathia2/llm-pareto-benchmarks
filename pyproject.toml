@@ -1,0 +1,30 @@
+[project]
+name = "llmmeta"
+version = "0.1.0"
+description = "Provenance-first, task-typed LLM meta-leaderboard: reproducible cost-quality meta-analysis across published benchmarks and leaderboards."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+analytics = ["duckdb>=1.0"]
+server = ["fastapi>=0.110", "uvicorn>=0.29", "pydantic>=2.0"]
+viz = ["streamlit>=1.33", "plotly>=5.20"]
+
+[project.scripts]
+llmmeta = "llmmeta.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

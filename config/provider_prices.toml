@@ -1,0 +1,26 @@
+# Authoritative provider pricing, effective-dated (spec §10.4, §14).
+#
+# Only entries with `confirmed = true` are ingested. This enforces the spec rule
+# "record the condition rather than inventing data": values must be verified
+# against the official pricing page (source_url) on each refresh before flipping
+# `confirmed` to true. OpenRouter supplies live prices for the end-to-end run;
+# this file is for authoritative provider prices + cache/batch tiers OpenRouter
+# may not expose.
+#
+# Prices are USD per million tokens. as_of is the price effective date.
+
+# Example shape (left unconfirmed so nothing unverified enters the warehouse):
+
+# [[price]]
+# source_id = "anthropic_pricing"
+# deployment_id = "anthropic/claude-opus-4-8/standard"
+# family_id = "anthropic-claude-opus-4-8"
+# join_key = "anthropic-claude-opus-4-8"
+# context_tokens = 1000000
+# as_of = "2026-06-18"
+# input_usd_per_million = 0.0
+# output_usd_per_million = 0.0
+# cached_input_usd_per_million = 0.0
+# cache_write_usd_per_million = 0.0
+# source_url = "https://docs.anthropic.com/en/docs/about-claude/pricing"
+# confirmed = false
