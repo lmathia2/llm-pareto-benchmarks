@@ -23,6 +23,8 @@ LIVE_ADAPTERS = {
     "artificial_analysis": ("llm_pareto.adapters.artificial_analysis", "fetch_live"),
     "vendor_claims": ("llm_pareto.adapters.vendor_claims", "fetch_live"),
     "hf_official": ("llm_pareto.adapters.hf_official", "fetch_live"),
+    # third-party benchmark aggregator (free Data API, key-gated; fail-soft like AA)
+    "llm_stats": ("llm_pareto.adapters.llm_stats", "fetch_live"),
     "provider_pricing": ("llm_pareto.adapters.provider_pricing", None),  # seed-file driven
 }
 

@@ -26,6 +26,7 @@ collection, we **record that condition** (status `partial-blocked`) rather than 
 | Provider pricing (OpenAI/Anthropic/Google) | A | official pages | **seed-file**; only `confirmed=true` rows ingested |
 | Vendor claims (model cards + announcements) | C | vendor/aggregator pages | **live + verified** — number must appear on the fetched page or it's skipped |
 | HF official per-dataset leaderboards | A/B | `…/datasets/{id}/leaderboard` | **token-gated** — needs `HF_TOKEN`; blocked otherwise |
+| llm-stats.com Data API | A | `api.zeroeval.com/stats/v1` (Bearer key) | **key-gated** — set `LLMSTATS_OPT_IN=1` + `LLMSTATS_API_KEY`; blocked + schema-drift-closed otherwise |
 
 ### Access axis & API-model coverage
 

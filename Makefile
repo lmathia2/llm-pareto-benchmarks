@@ -25,6 +25,7 @@ ingest: ## Fetch + ingest all live adapters (backbone + Tier-B/C)
 	$(PY) -m llm_pareto.cli ingest --source artificial_analysis --db $(DB)
 	$(PY) -m llm_pareto.cli ingest --source vendor_claims --db $(DB)
 	$(PY) -m llm_pareto.cli ingest --source hf_official --db $(DB)
+	$(PY) -m llm_pareto.cli ingest --source llm_stats --db $(DB)
 
 prices: ## Refresh provider pricing records
 	$(PY) -m llm_pareto.cli prices refresh --db $(DB) --as-of $(DATE)
