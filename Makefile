@@ -3,10 +3,18 @@ PROFILE ?= profiles/finance_deep_research_under_3.toml
 PY ?= python3
 DATE := $(shell date +%F)
 
-.PHONY: help init registry discover ingest prices normalize recommend export test check clean all
+# Load local secrets (API keys / opt-ins) if present, and export them to recipes.
+# .env is gitignored — see .env.example for the template. Keeps keys out of the
+# shell history and out of version control while making `make warehouse` one step.
+ifneq (,$(wildcard ./.env))
+include .env
+export
+endif
+
+.PHONY: help init registry discover ingest prices normalize recommend export test check clean all warehouse
 
 help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-12s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-12s %s\n", $$1, $$2}'
 
 init: ## Create schema and an empty warehouse
 	$(PY) -m llm_pareto.cli init --db $(DB)
@@ -56,6 +64,9 @@ all: init registry discover ingest prices normalize recommend export ## Full pip
 
 refresh-live: clean init registry discover ingest prices normalize recommend-all export check ## Clean rebuild from LIVE sources (real timestamps + current models)
 	@echo "✓ live refresh complete — lineage now carries real retrieval timestamps"
+
+warehouse: clean init registry ingest prices normalize check ## One-shot: build the durable local warehouse (uses .env keys), then query offline
+	@echo "✓ warehouse built at $(DB) — now fully offline: query via SQL, 'llm-pareto ask/recommend', the API, or 'llm-pareto dashboard'"
 
 clean:
 	rm -f $(DB)
