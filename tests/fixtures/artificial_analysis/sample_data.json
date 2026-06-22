@@ -1,0 +1,43 @@
+{
+  "status": 200,
+  "prompt_options": {},
+  "data": [
+    {
+      "id": "synthetic-0001",
+      "name": "Acme Reasoner X (high)",
+      "slug": "acme-reasoner-x-high",
+      "release_date": "2026-05-01",
+      "model_creator": {"id": "c1", "name": "Acme", "slug": "acme"},
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 55.0,
+        "gpqa": 0.81,
+        "hle": 0.22,
+        "scicode": 0.40,
+        "terminalbench_v2_1": 0.33,
+        "aime_25": 0.90,
+        "tau_banking": 0.61,
+        "lcr": 0.50,
+        "livecodebench": null
+      },
+      "pricing": {"price_1m_blended_3_to_1": 6.0, "price_1m_input_tokens": 3.0, "price_1m_output_tokens": 15.0},
+      "median_output_tokens_per_second": 120.0,
+      "median_time_to_first_token_seconds": 0.8
+    },
+    {
+      "id": "synthetic-0002",
+      "name": "Globex Open 70B",
+      "slug": "globex-open-70b",
+      "release_date": "2026-04-10",
+      "model_creator": {"id": "c2", "name": "Globex", "slug": "globex"},
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 41.0,
+        "gpqa": 0.66,
+        "hle": 0.09,
+        "scicode": 0.30
+      },
+      "pricing": {"price_1m_blended_3_to_1": 0.5, "price_1m_input_tokens": 0.3, "price_1m_output_tokens": 1.2},
+      "median_output_tokens_per_second": 240.0,
+      "median_time_to_first_token_seconds": 0.3
+    }
+  ]
+}

@@ -39,3 +39,30 @@ def test_artificial_analysis_blocked_without_optin(monkeypatch):
     assert res.sources[0].status == "partial-blocked"
     assert len(res.observations) == 0
     assert len(res.prices) == 0
+
+
+def test_artificial_analysis_parses_evals_and_price_when_opted_in(monkeypatch):
+    monkeypatch.setenv("AA_OPT_IN", "1")
+    res = artificial_analysis.parse(load_fixture("artificial_analysis", "sample_data.json"), AS_OF)
+    assert len(res.entities) == 2
+    # org-prefixed join_key (lines up with OpenRouter pricing convention)
+    keys = {e.metadata["join_key"] for e in res.entities}
+    assert "acme-acme-reasoner-x-high" in keys
+    # granular evals feed task families; composite index is informational only
+    by_metric = {b.metric_name: b for b in res.benchmarks}
+    assert by_metric["gpqa"].metadata["task_family"] == "reasoning"
+    assert by_metric["terminalbench_v2_1"].metadata["task_family"] == "coding_agent"
+    assert by_metric["tau_banking"].metadata["task_family"] == "finance"
+    assert by_metric["artificial_analysis_intelligence_index"].metadata["task_family"] is None
+    # null evals skipped; AA pricing emitted per model
+    assert all(o.raw_score is not None for o in res.observations)
+    assert len(res.prices) == 2
+    assert any(p.blended_usd_per_million for p in res.prices)
+
+
+def test_artificial_analysis_schema_drift(monkeypatch):
+    monkeypatch.setenv("AA_OPT_IN", "1")
+    bad = Snapshot("artificial_analysis", "x", b'{"data": {"not": "a list"}}', 200,
+                   "application/json", AS_OF, None)
+    with pytest.raises(SchemaDriftError):
+        artificial_analysis.parse(bad, AS_OF)

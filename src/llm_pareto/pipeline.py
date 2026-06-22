@@ -20,7 +20,7 @@ LIVE_ADAPTERS = {
     # Tier-B/C (expanded scope): aider is cleanly accessible; artificial_analysis is
     # terms-gated and records a blocked condition unless explicitly opted in.
     "aider_polyglot": ("llm_pareto.adapters.aider_polyglot", "fetch_live"),
-    "artificial_analysis": ("llm_pareto.adapters.artificial_analysis", "fetch_live"),
+    "artificial_analysis": ("llm_pareto.adapters.artificial_analysis", "authed_fetch_live"),
     "vendor_claims": ("llm_pareto.adapters.vendor_claims", "fetch_live"),
     "hf_official": ("llm_pareto.adapters.hf_official", "fetch_live"),
     # third-party benchmark aggregator (free Data API, key-gated; fail-soft like AA)
