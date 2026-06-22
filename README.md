@@ -13,6 +13,7 @@ The same data gives different winners for "deep research under $3" vs. "cheapest
 - [Five ideas that make the numbers trustworthy](#five-ideas-that-make-the-numbers-trustworthy)
 - [Install](#install)
 - [Quick start](#quick-start)
+- [See it in action](#see-it-in-action)
 - [Visualization (dashboard)](#visualization-dashboard)
 - [Commands](#commands)
 - [Data sources](#data-sources)
@@ -68,7 +69,48 @@ llm-pareto ask --query "best model for deep research with a good quality/cost tr
 `make warehouse` reads API keys from a local `.env` (see [Data sources](#data-sources)). Without keys it
 still builds — gated sources just record a "blocked" status instead of inventing data.
 
+## See it in action
+
+Three questions, three different answers from the **same** warehouse — the core idea is that "best"
+depends on the task, the budget, and what evidence actually exists.
+
+### 1. "Best deep-research model with a good cost/quality tradeoff?"
+
+```bash
+llm-pareto ask --query "best model for deep research with a good quality/cost tradeoff"
+```
+
+![Cost-quality Pareto frontier](docs/img/pareto.png)
+
+Every priced model is a point. The **blue frontier** is the non-dominated set; grey points are dominated
+(something is better *and* cheaper). The **⭐** is the recommended pick — here the knee point, where
+quality stops being worth the extra cost. Move the budget slider and the star moves.
+
+### 2. "Where does the evidence actually exist?"
+
+The coverage map shows each model's normalized score per benchmark. **Gaps are real** — no published
+number — and benchmarks are tagged `[oe]` (independent harness) vs `[vendor]` (self-reported), so you can
+see at a glance that frontier API models (bottom rows) are thinly covered until you add more sources.
+
+![Evidence coverage heatmap](docs/img/coverage.png)
+
+This is why recommendations carry a `coverage` score and an `evidence` flag (`measured` / `transferred` /
+`price_only`) instead of pretending every model is equally well-measured.
+
+### 3. "Route one call — cheapest model that clears a risk bar."
+
+```bash
+llm-pareto route --profile profiles/coding_agent_balanced.toml --risk medium
+```
+
+![Pre-call router](docs/img/router.png)
+
+**Green** models clear the risk-tier quality threshold; grey ones don't. The **⭐** is the
+cheapest passing one — often a fraction of the cost of always reaching for the top model.
+
 ## Visualization (dashboard)
+
+The charts above are static renders of the live dashboard — start it to explore interactively:
 
 ```bash
 llm-pareto dashboard          # opens http://localhost:8501
